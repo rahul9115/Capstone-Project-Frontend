@@ -1,7 +1,8 @@
+
 import Highcharts from "highcharts";
 import config from "./config";
+import * as axios from 'axios';
 const colors = config.chartColors;
-
 let columnColors = [
   colors.blue,
   colors.green,
@@ -13,7 +14,6 @@ let columnColors = [
   colors.pink,
 ];
 let lineColors = [colors.blue, colors.green, colors.orange];
-
 export const chartData = {
   apex: {
     column: {
@@ -349,7 +349,6 @@ export const chartData = {
           },
         },
       },
-
       legend: {
         data: ["DQ", "TY", "SS", "QG", "SY", "DD"],
         textStyle: {
@@ -393,7 +392,6 @@ export const chartData = {
           },
         },
       },
-
       series: [
         {
           type: "themeRiver",
@@ -724,31 +722,52 @@ export const chartData = {
     },
   },
 };
-
 export let liveChartInterval = null;
+var Datetime, Open, Forecasted, length;
 
 export const liveChart = {
   liveChartInterval: null,
   colors: [colors.blue],
   chart: {
     backgroundColor: "transparent",
-    height: 170,
+    height: 350,
     type: "spline",
     animation: Highcharts.svg, // don't animate in old IE
     marginRight: 10,
     events: {
       load: function () {
         // set up the updating of the chart each second
-        var series = this.series[0];
-        liveChartInterval = setInterval(function () {
-          var x = new Date().getTime(), // current time
-            y = Math.random();
-          series.addPoint([x, y], true, true);
-        }, 1000);
+        // var series = [];
+        // axios.default.get('http://127.0.0.1:5000/api')
+        // .then(response => {
+        //   const { Datetime, Open, Forecasted, length } = response.data;
+        //   let currentIndex = length;
+        //   // Add the first 20 points to the chart
+        //   console.log("Output",length,Datetime.length,Forecasted.length);
+        //   liveChartInterval = setInterval(function () {
+        //     if (currentIndex < Datetime.length){
+            
+        //         const x = new Date(Datetime[currentIndex]).getTime(); // Convert datetime to timestamp
+        //         const y = Forecasted[currentIndex];
+        //         console.log(x,y)
+        //         series.push([x, y], true, true);
+        //         currentIndex++;
+             
+        //     }else{
+        //       clearInterval(liveChartInterval);
+        //     }
+        //   }, 1000);
+        // });
+
+        // var series = this.series[0];
+        // liveChartInterval = setInterval(function () {
+        //   var x = new Date().getTime(), // current time
+        //     y = Math.random();
+        //   series.addPoint([x, y], true, true);
+        // }, 1000);
       },
     },
   },
-
   time: {
     useUTC: false,
   },
@@ -797,21 +816,181 @@ export const liveChart = {
   },
   series: [
     {
-      name: "Random data",
+      name: "Real Time Data",
       data: (function () {
         // generate an array of random data
-        var data = [],
-          time = new Date().getTime(),
-          i;
+        var data = [];
+       
+          axios.default.get('http://127.0.0.1:5000/api')
+            .then(response => {
+              const { Datetime, Open, Forecasted, length } = response.data;
+              // console.log("Date",Datetime,Open);
+              // Add the first 20 points to the chart
+              console.log("This",response.data)
+              for (let i=length-50;i<length;i++){
+                data.push({x:new Date(Datetime[i]).getTime(), // Convert datetime to timestamp
+                y:Open[i]
+                })
+              
+              }
+            });
+          
 
-        for (i = -19; i <= 0; i += 1) {
-          data.push({
-            x: time + i * 1000,
-            y: Math.random(),
-          });
-        }
-        return data;
+
+      //   var data = [],
+      //   time = new Date().getTime(),
+      //   i;
+
+      // for (i = -19; i <= 0; i += 1) {
+      //   data.push({
+      //     x: time + i * 1000,
+      //     y: Math.random(),
+      //   });
+      // }
+      return data;
+      
+       
       })(),
     },
+    {
+      name: "Forecast Data",
+      data: (function () {
+        // generate an array of random data
+        var data = [];
+       
+          axios.default.get('http://127.0.0.1:5000/api')
+            .then(response => {
+              const { Datetime, Open, Forecasted, length } = response.data;
+              // console.log("Date",Datetime,Open);
+              // Add the first 20 points to the chart
+              console.log("This",Forecasted,length,Datetime.length)
+              for (let i=length+1;i<Datetime.length;i++){
+                data.push({x:new Date(Datetime[i]).getTime(), // Convert datetime to timestamp
+                y:Forecasted[i]
+                })
+              
+              }
+            });
+
+      //   var data = [],
+      //   time = new Date().getTime(),
+      //   i;
+
+      // for (i = -19; i <= 0; i += 1) {
+      //   data.push({
+      //     x: time + i * 1000,
+      //     y: Math.random(),
+      //   });
+      // }
+      return data;
+      
+       
+      })(),
+    },
+    // {
+    //   name: "p10",
+    //   data: (function () {
+    //     // generate an array of random data
+    //     var data = [];
+       
+    //       axios.default.get('http://127.0.0.1:5000/api')
+    //         .then(response => {
+    //           const { Datetime, Open, Forecasted, length, p10, p50, p90  } = response.data;
+    //           // console.log("Date",Datetime,Open);
+    //           // Add the first 20 points to the chart
+    //           console.log("This",Forecasted,length,Datetime.length)
+    //           for (let i=length;i<Datetime.length;i++){
+    //             data.push({x:new Date(Datetime[i]).getTime(), // Convert datetime to timestamp
+    //             y:p10[i]
+    //             })
+              
+    //           }
+    //         });
+
+    //   //   var data = [],
+    //   //   time = new Date().getTime(),
+    //   //   i;
+
+    //   // for (i = -19; i <= 0; i += 1) {
+    //   //   data.push({
+    //   //     x: time + i * 1000,
+    //   //     y: Math.random(),
+    //   //   });
+    //   // }
+    //   return data;
+      
+       
+    //   })(),
+    // },
+    // {
+    //   name: "p50",
+    //   data: (function () {
+    //     // generate an array of random data
+    //     var data = [];
+       
+    //       axios.default.get('http://127.0.0.1:5000/api')
+    //         .then(response => {
+    //           const { Datetime, Open, Forecasted, length, p10, p50, p90  } = response.data;
+    //           // console.log("Date",Datetime,Open);
+    //           // Add the first 20 points to the chart
+    //           console.log("This",Forecasted,length,Datetime.length)
+    //           for (let i=length;i<Datetime.length;i++){
+    //             data.push({x:new Date(Datetime[i]).getTime(), // Convert datetime to timestamp
+    //             y:p50[i]
+    //             })
+              
+    //           }
+    //         });
+
+    //   //   var data = [],
+    //   //   time = new Date().getTime(),
+    //   //   i;
+
+    //   // for (i = -19; i <= 0; i += 1) {
+    //   //   data.push({
+    //   //     x: time + i * 1000,
+    //   //     y: Math.random(),
+    //   //   });
+    //   // }
+    //   return data;
+      
+       
+    //   })(),
+    // },
+    // {
+    //   name: "p90",
+    //   data: (function () {
+    //     // generate an array of random data
+    //     var data = [];
+       
+    //       axios.default.get('http://127.0.0.1:5000/api')
+    //         .then(response => {
+    //           const { Datetime, Open, Forecasted, length, p10, p50, p90  } = response.data;
+    //           // console.log("Date",Datetime,Open);
+    //           // Add the first 20 points to the chart
+    //           console.log("This",Forecasted,length,Datetime.length)
+    //           for (let i=length;i<Datetime.length;i++){
+    //             data.push({x:new Date(Datetime[i]).getTime(), // Convert datetime to timestamp
+    //             y:p90[i]
+    //             })
+              
+    //           }
+    //         });
+
+    //   //   var data = [],
+    //   //   time = new Date().getTime(),
+    //   //   i;
+
+    //   // for (i = -19; i <= 0; i += 1) {
+    //   //   data.push({
+    //   //     x: time + i * 1000,
+    //   //     y: Math.random(),
+    //   //   });
+    //   // }
+    //   return data;
+      
+       
+    //   })(),
+    // }
   ],
 };
