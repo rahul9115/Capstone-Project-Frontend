@@ -50,84 +50,96 @@ const Charts = () => {
 
   useEffect(() => {
     const colors = config.chartColors;
-
+  
     const fetchData = async () => {
-      const response = await axios.get("http://127.0.0.1:5000/api");
-      const { Datetime, Open, Forecasted, length } = response.data;
-      const forecastData = [];
-      const acutalData=[];
-
-      for (let i = length + 1; i < Datetime.length; i++) {
-        forecastData.push({
-          x: new Date(Datetime[i]).getTime(), // Convert datetime to timestamp
-          y: Forecasted[i],
-        });
-      }
-      for (let i = length - 20; i < length; i++) {
-        acutalData.push({
-          x: new Date(Datetime[i]).getTime(), // Convert datetime to timestamp
-          y: Open[i],
-        });
-      }
-
-      const liveChartConfig = {
-        chart: {
-          backgroundColor: "transparent",
-          height: 350,
-          type: "spline",
-          animation: Highcharts.svg,
-          marginRight: 10,
-        },
-        time: {
-          useUTC: false,
-        },
-        credits: { enabled: false },
-        title: false,
-        xAxis: {
-          type: "datetime",
-          tickPixelInterval: 150,
-          labels: { style: { color: colors.textColor } },
-          lineWidth: 0,
-          tickWidth: 0,
-        },
-        yAxis: {
-          title: { enabled: false },
-          plotLines: [
+      try {
+        const response = await axios.get("http://127.0.0.1:5000/api");
+        const { Datetime, Open, Forecasted, length } = response.data;
+        const combinedData = [];
+        console.log("The data", Datetime, Open, Forecasted, length);
+  
+        // Combine both Open and Forecasted into one array
+        for (let i = length - 20; i < length; i++) {
+          combinedData.push({
+            x: new Date(Datetime[i]).getTime(), // Convert datetime to timestamp
+            y: Open[i],
+            color: "#ADD8E6", // Light Blue for Actual Data
+            name: "Actual Data"
+          });
+        }
+  
+        for (let i = length + 1; i < Datetime.length; i++) {
+          combinedData.push({
+            x: new Date(Datetime[i]).getTime(), // Convert datetime to timestamp
+            y: Forecasted[i],
+            color: "#db2a34", // Red for Forecasted Data
+            name: "Forecasted Data"
+          });
+        }
+  
+        const liveChartConfig = {
+          chart: {
+            backgroundColor: "transparent",
+            height: 350,
+            type: "spline",
+            animation: Highcharts.svg,
+            marginRight: 10,
+          },
+          time: {
+            useUTC: false,
+          },
+          credits: { enabled: false },
+          title: false,
+          xAxis: {
+            type: "datetime",
+            tickPixelInterval: 150,
+            labels: { style: { color: colors.textColor } },
+            lineWidth: 0,
+            tickWidth: 0,
+          },
+          yAxis: {
+            title: { enabled: false },
+            plotLines: [
+              {
+                value: 0,
+                width: 1,
+                color: colors.textColor,
+              },
+            ],
+            labels: { style: { color: colors.textColor } },
+            gridLineColor: colors.gridLineColor,
+          },
+          tooltip: {
+            headerFormat: "<b>{point.name}</b><br/>",
+            pointFormat: "{point.x:%Y-%m-%d %H:%M:%S}<br/>{point.y:.2f}",
+          },
+          legend: { enabled: false },
+          series: [
             {
-              value: 0,
-              width: 1,
-              color: colors.textColor,
+              name: "Combined Data",
+              data: combinedData,
+              type: "spline",
+              // The colors are already set in each data point
             },
           ],
-          labels: { style: { color: colors.textColor } },
-          gridLineColor: colors.gridLineColor,
-        },
-        tooltip: {
-          headerFormat: "<b>{series.name}</b><br/>",
-          pointFormat: "{point.x:%Y-%m-%d %H:%M:%S}<br/>{point.y:.2f}",
-        },
-        legend: { enabled: false },
-        series: [
-          {
-            name: "Forecast Data",
-            data: forecastData,
-            // color: "#db2a34"// Red color for forecast data
-          },
-          {
-            name: "Actual Data",
-            data: acutalData,
-            color: "#ADD8E6"
-            
-           
-          },
-        ],
-      };
-
-      setLiveChart(liveChartConfig);
+        };
+  
+        setLiveChart(liveChartConfig);
+      } catch (error) {
+        console.error("Error fetching data", error);
+      }
     };
-
+  
+    // Initial fetch
     fetchData();
+  
+    // Set interval to refetch data every 5 seconds (you can change the interval time)
+    const intervalId = setInterval(fetchData, 5000);
+  
+    // Clear interval on component unmount
+    return () => clearInterval(intervalId);
   }, []);
+  
 
   return (
     <div className={s.root}>
@@ -140,7 +152,7 @@ const Charts = () => {
             <Widget
               title={
                 <h5>
-                  Apex <span className="fw-semi-bold">Column Chart</span>
+                  AAPL <span className="fw-semi-bold">Stock Forecast</span>
                 </h5>
               }
               close
