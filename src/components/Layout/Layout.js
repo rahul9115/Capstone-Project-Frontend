@@ -88,9 +88,7 @@ class Layout extends React.Component {
                   </Switch>
                 </CSSTransition>
               </TransitionGroup>
-              <footer className={s.contentFooter}>
-                Light Blue React Template - React admin template made by <a href="https://flatlogic.com" >Flatlogic</a>
-              </footer>
+              
             </main>
           </Hammer>
         </div>
