@@ -54,12 +54,13 @@ const Charts = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get("http://127.0.0.1:5000/api");
-        const { Datetime, Open, Forecasted, length } = response.data;
+        const { Datetime, Open, Forecasted, length, p10, p50, p90,HDatetime,History} = response.data;
         const combinedData = [];
+        const historyData = [];
         console.log("The data", Datetime, Open, Forecasted, length);
   
         // Combine both Open and Forecasted into one array
-        for (let i = length - 20; i < length; i++) {
+        for (let i = length - 50; i < length; i++) {
           combinedData.push({
             x: new Date(Datetime[i]).getTime(), // Convert datetime to timestamp
             y: Open[i],
@@ -67,16 +68,51 @@ const Charts = () => {
             name: "Actual Data"
           });
         }
-  
+
         for (let i = length + 1; i < Datetime.length; i++) {
           combinedData.push({
             x: new Date(Datetime[i]).getTime(), // Convert datetime to timestamp
             y: Forecasted[i],
             color: "#db2a34", // Red for Forecasted Data
+            name: ""
+          });
+        }
+
+        
+        console.log("Here",HDatetime,History)
+        for (let i = 0; i < HDatetime.length; i++) {
+          historyData.push({
+            x: new Date(HDatetime[i]).getTime(), // Convert datetime to timestamp
+            y: History[i],
+            color: "#28a745", // Red for Forecasted Data
             name: "Forecasted Data"
           });
         }
-  
+        
+        // for (let i = length + 1; i < Datetime.length; i++) {
+        //   combinedData.push({
+        //     x: new Date(Datetime[i]).getTime(), // Convert datetime to timestamp
+        //     y: p10[i],
+        //     color: "#db2a34", // Red for Forecasted Data
+        //     name: "p10"
+        //   });
+        // }
+        // for (let i = length + 1; i < Datetime.length; i++) {
+        //   combinedData.push({
+        //     x: new Date(Datetime[i]).getTime(), // Convert datetime to timestamp
+        //     y: p50[i],
+        //     color: "#db2a34", // Red for Forecasted Data
+        //     name: "p50"
+        //   });
+        // }
+        // for (let i = length + 1; i < Datetime.length; i++) {
+        //   combinedData.push({
+        //     x: new Date(Datetime[i]).getTime(), // Convert datetime to timestamp
+        //     y: p90[i],
+        //     color: "#db2a34", // Red for Forecasted Data
+        //     name: "p90"
+        //   });
+        // }
         const liveChartConfig = {
           chart: {
             backgroundColor: "transparent",
@@ -121,6 +157,12 @@ const Charts = () => {
               type: "spline",
               // The colors are already set in each data point
             },
+            {
+              name: "History Data",
+              data: historyData,
+              type: "spline",
+              // The colors are already set in each data point
+            }
           ],
         };
   
