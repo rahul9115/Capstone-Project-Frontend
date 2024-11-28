@@ -18,6 +18,7 @@ import HighchartsReact from "highcharts-react-official";
 import exporting from "highcharts/modules/exporting";
 import exportData from "highcharts/modules/export-data";
 import axios from "axios";
+import { Table } from "reactstrap";
 
 exporting(Highcharts);
 exportData(Highcharts);
@@ -25,6 +26,7 @@ exportData(Highcharts);
 const Charts = () => {
   const [cd, setCd] = useState(chartData);
   const [liveChart, setLiveChart] = useState(null);
+  const [newsTable, setNewsTable] = useState([]);
   const [initEchartsOptions] = useState({
     renderer: "canvas",
   });
@@ -54,13 +56,14 @@ const Charts = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get("http://127.0.0.1:5000/api");
-        const { Datetime, Open, Forecasted, length, p10, p50, p90,HDatetime,History} = response.data;
+        const { Datetime, Open, Forecasted, length, p10, p50, p90,HDatetime,History,NewsDatetime,News, Sentiment} = response.data;
         const combinedData = [];
         const historyData = [];
+        const newsData = [];
         console.log("The data", Datetime, Open, Forecasted, length);
   
         // Combine both Open and Forecasted into one array
-        for (let i = length - 50; i < length; i++) {
+        for (let i = length - 20; i < length; i++) {
           combinedData.push({
             x: new Date(Datetime[i]).getTime(), // Convert datetime to timestamp
             y: Open[i],
@@ -88,6 +91,15 @@ const Charts = () => {
             name: "Forecasted Data"
           });
         }
+
+        for (let i = 0; i < NewsDatetime.length; i++) {
+          newsData.push({
+            datetime: new Date(NewsDatetime[i]).toLocaleString(),
+            news: News[i],
+            sentiment: Sentiment[i],
+          });
+        }
+       
         
         // for (let i = length + 1; i < Datetime.length; i++) {
         //   combinedData.push({
@@ -167,6 +179,7 @@ const Charts = () => {
         };
   
         setLiveChart(liveChartConfig);
+        setNewsTable(newsData);
       } catch (error) {
         console.error("Error fetching data", error);
       }
@@ -203,9 +216,40 @@ const Charts = () => {
               {liveChart && <HighchartsReact highcharts={Highcharts} options={liveChart} />}
             </Widget>
           </Col>
-         
-          
         </Row>
+        <Row>
+          <Col lg={12} xs={20}>
+            <Widget
+              title={
+                <h5>
+                  News <span className="fw-semi-bold">and Sentiments</span>
+                </h5>
+              }
+              close
+              collapse
+            >
+              <Table striped responsive>
+                <thead>
+                  <tr>
+                    <th>Datetime</th>
+                    <th>News</th>
+                    <th>Sentiment</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {newsTable.map((item, index) => (
+                    <tr key={index}>
+                      <td>{item.datetime}</td>
+                      <td>{item.news}</td>
+                      <td>{item.sentiment}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </Widget>
+          </Col>
+        </Row>
+
       </div>
     </div>
   );
